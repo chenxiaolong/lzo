@@ -45,6 +45,10 @@ project(lzo C)
 
 option(ENABLE_STATIC "Build static LZO library." ON)
 option(ENABLE_SHARED "Build shared LZO library." OFF)
+option(ENABLE_BINARIES "Build LZO binaries." ON)
+option(INSTALL_LIBS "Install LZO library." ON)
+option(INSTALL_DOCS "Install LZO documentation." ON)
+option(INSTALL_HEADERS "Install LZO headers." ON)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
@@ -83,27 +87,29 @@ macro(lzo_add_executable t)
         target_link_libraries(${t} lzo_shared)
     endif()
 endmacro()
-# main test driver
-lzo_add_executable(lzotest  lzotest/lzotest.c)
-# examples
-lzo_add_executable(dict     examples/dict.c)
-lzo_add_executable(lzopack  examples/lzopack.c)
-lzo_add_executable(overlap  examples/overlap.c)
-lzo_add_executable(precomp  examples/precomp.c)
-lzo_add_executable(precomp2 examples/precomp2.c)
-lzo_add_executable(simple   examples/simple.c)
-# some boring internal test programs
-if(0)
-    lzo_add_executable(align    tests/align.c)
-    lzo_add_executable(chksum   tests/chksum.c)
-    lzo_add_executable(promote  tests/promote.c)
-    lzo_add_executable(sizes    tests/sizes.c)
-endif()
+if(ENABLE_BINARIES)
+    # main test driver
+    lzo_add_executable(lzotest  lzotest/lzotest.c)
+    # examples
+    lzo_add_executable(dict     examples/dict.c)
+    lzo_add_executable(lzopack  examples/lzopack.c)
+    lzo_add_executable(overlap  examples/overlap.c)
+    lzo_add_executable(precomp  examples/precomp.c)
+    lzo_add_executable(precomp2 examples/precomp2.c)
+    lzo_add_executable(simple   examples/simple.c)
+    # some boring internal test programs
+    if(0)
+        lzo_add_executable(align    tests/align.c)
+        lzo_add_executable(chksum   tests/chksum.c)
+        lzo_add_executable(promote  tests/promote.c)
+        lzo_add_executable(sizes    tests/sizes.c)
+    endif()
 
-# miniLZO
-if(1)
-    add_executable(testmini minilzo/testmini.c minilzo/minilzo.c)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/lzo) # needed for "lzoconf.h"
+    # miniLZO
+    if(1)
+        add_executable(testmini minilzo/testmini.c minilzo/minilzo.c)
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/lzo) # needed for "lzoconf.h"
+    endif()
 endif()
 
 #
@@ -214,13 +220,19 @@ set(pkginclude_HEADERS
     include/lzo/lzoutil.h
 )
 
-install(FILES ${doc_DATA} DESTINATION "${install_doc_subdir}")
-install(FILES ${pkginclude_HEADERS} DESTINATION "${install_include_subdir}")
-if(ENABLE_STATIC)
-    install(TARGETS lzo_static DESTINATION "${install_lib_subdir}")
+if(INSTALL_DOCS)
+    install(FILES ${doc_DATA} DESTINATION "${install_doc_subdir}")
 endif()
-if(ENABLE_SHARED)
-    install(TARGETS lzo_shared DESTINATION "${install_lib_subdir}")
+if(INSTALL_HEADERS)
+    install(FILES ${pkginclude_HEADERS} DESTINATION "${install_include_subdir}")
+endif()
+if(INSTALL_LIBS)
+    if(ENABLE_STATIC)
+        install(TARGETS lzo_static DESTINATION "${install_lib_subdir}")
+    endif()
+    if(ENABLE_SHARED)
+        install(TARGETS lzo_shared DESTINATION "${install_lib_subdir}")
+    endif()
 endif()
 if(0)
     set(lzo_EXAMPLES lzopack lzotest simple)
